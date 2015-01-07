@@ -2,7 +2,7 @@ require 'zk'
 require 'rest_client'
 
 module RSpec::Sidecar::AppAvailability
-  def app_is_available
+  def app_is_available?(&blk)
     begin
       yield
     rescue Errno::ECONNREFUSED => _
