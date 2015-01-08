@@ -23,22 +23,22 @@ describe RSpec::Sidecar do
   end
 
   it "includes a helper to check if an app is available" do
-    result = app_is_available { true }
+    result = app_is_available? { true }
     expect(result).to be true
   end
 
   it "the app_is_available helper fails on a connection refused" do
-    result = app_is_available { raise Errno::ECONNREFUSED }
+    result = app_is_available? { raise Errno::ECONNREFUSED }
     expect(result).to be false
   end
 
   it "the app_is_available helper fails on a service unavailable" do
-    result = app_is_available { raise RestClient::ServiceUnavailable }
+    result = app_is_available? { raise RestClient::ServiceUnavailable }
     expect(result).to be false
   end
 
   it "the app_is_available helper fails on a no zookeeper node error" do
-    result = app_is_available { raise ZK::Exceptions::NoNode }
+    result = app_is_available? { raise ZK::Exceptions::NoNode }
     expect(result).to be false
   end
 
