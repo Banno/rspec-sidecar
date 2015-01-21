@@ -1,5 +1,5 @@
 require 'zk'
-require 'rest_client'
+require 'rest-client'
 
 module RSpec::Sidecar::AppAvailability
   def app_is_available?(&blk)
