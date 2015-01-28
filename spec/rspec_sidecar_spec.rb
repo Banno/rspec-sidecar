@@ -22,6 +22,20 @@ describe RSpec::Sidecar do
     expect(service_port("test", "http")).to eql(instance_info[:port])
   end
 
+  it "spins until service instances are available" do
+    zookeeper = double("zookeeper")
+    expect(ZK).to receive(:open).and_yield(zookeeper)
+
+    # multiple calls
+    expect(zookeeper).to receive(:children).with("/banno/services/test:http").and_return([], ["child1"])
+    
+    expect(zookeeper).to receive(:get).with("/banno/services/test:http/child1") do
+      [instance_info.to_json, nil]
+    end
+    
+    expect(service_port("test", "http")).to eql(instance_info[:port])
+  end
+
   it "includes a helper to check if an app is available" do
     result = app_is_available? { true }
     expect(result).to be true
