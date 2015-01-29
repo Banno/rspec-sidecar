@@ -23,9 +23,6 @@ describe RSpec::Sidecar do
   end
 
   it "spins until service instances are available" do
-    zookeeper = double("zookeeper")
-    expect(ZK).to receive(:open).and_yield(zookeeper)
-
     # multiple calls
     expect(zookeeper).to receive(:children).with("/banno/services/test:http").and_return([], ["child1"])
     
@@ -34,6 +31,11 @@ describe RSpec::Sidecar do
     end
     
     expect(service_port("test", "http")).to eql(instance_info[:port])
+  end
+
+  it "will eventually stop retrying to spin for service instances" do
+    allow(zookeeper).to receive(:children) { [] }
+    expect { service_port("test", "http") }.to raise_error("service 'test:http' not available")
   end
 
   it "includes a helper to check if an app is available" do
@@ -56,12 +58,14 @@ describe RSpec::Sidecar do
     expect(result).to be false
   end
 
+  let(:zookeeper) do 
+    zookeeper = double("zookeeper")
+    expect(ZK).to receive(:open).and_yield(zookeeper)
+    zookeeper
+  end
+
   private
   def setup_zookeeper_mock(name, type, instance_info)
-    zookeeper = double("zookeeper")
-
-    expect(ZK).to receive(:open).and_yield(zookeeper)
-
     expect(zookeeper).to receive(:children).with("/banno/services/#{name}:#{type}") do
       ["child1"]
     end
