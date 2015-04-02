@@ -1,4 +1,5 @@
 require 'rspec/sidecar'
+require 'socket'
 
 describe RSpec::Sidecar do
   it "includes the wait_until helper" do
@@ -20,6 +21,17 @@ describe RSpec::Sidecar do
   it "exposes service_port to look up instance hosts" do
     setup_zookeeper_mock("test", "http", instance_info)
     expect(service_port("test", "http")).to eql(instance_info[:port])
+  end
+
+  it "exposes service_port_open? to see if instances are open and aren't" do
+    setup_zookeeper_mock("test", "http", instance_info)
+    expect(service_port_open?("test", "http")).to be false
+  end
+
+  it "exposes service_port_open? to see if instances are open and are" do
+    TCPServer.new(2000)
+    setup_zookeeper_mock("test", "http", {address: "localhost", port: 2000})
+    expect(service_port_open?("test", "http")).to be true
   end
 
   it "spins until service instances are available" do
