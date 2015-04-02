@@ -1,5 +1,7 @@
 require 'zk'
 require 'json'
+require 'timeout'
+require 'socket'
 
 module RSpec::Sidecar::Services
   def service_host(name, type)
@@ -8,6 +10,20 @@ module RSpec::Sidecar::Services
 
   def service_port(name, type)
     service(name, type)["port"]
+  end
+
+  def service_port_open?(name, type, timeout: 1)
+    instance = service(name, type)
+    Timeout.timeout(timeout) do
+      begin
+        TCPSocket.new(instance["address"], instance["port"]).close
+        true
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError
+        false
+      end
+    end
+  rescue Timeout::Error
+    return false
   end
 
   def service(name, type,
