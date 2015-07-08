@@ -27,9 +27,9 @@ module RSpec::Sidecar::Services
   end
 
   def service(name, type,
-              zookeeper_host = ENV["ZOOKEEPER_PORT_2181_TCP_ADDR"] || "localhost",
-              zookeeper_port = ENV["ZOOKEEPER_PORT_2181_TCP_PORT"] || 2181,
-              retries = 5)
+              zookeeper_host: ENV["ZOOKEEPER_PORT_2181_TCP_ADDR"] || "localhost",
+              zookeeper_port: ENV["ZOOKEEPER_PORT_2181_TCP_PORT"] || 2181,
+              retries: 5)
     ZK.open(zookeeper_host + ":" + zookeeper_port.to_s) do |zk|
       instances_path = "/banno/services/#{name}:#{type}"
       loop do
