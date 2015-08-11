@@ -63,6 +63,8 @@ module RSpec::Sidecar::Services
         puts "waiting for service '#{name}:#{type}' to unregister (tries left: #{retries})"
       rescue SidecarNotAvailable => _
         return true
+      rescue ZK::Exceptions::NoNode => _
+        return true
       end
     end
   end
