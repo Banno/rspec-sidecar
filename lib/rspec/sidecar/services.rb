@@ -4,6 +4,10 @@ require 'timeout'
 require 'socket'
 
 module RSpec::Sidecar::Services
+
+  class SidecarNotAvailable < Exception
+  end
+
   def service_host(name, type)
     service(name, type)["address"]
   end
@@ -35,9 +39,9 @@ module RSpec::Sidecar::Services
       loop do
         instances = zk.children(instances_path)
         if instances.empty?
-          raise "service '#{name}:#{type}' not available" if retries == 0
           retries -= 1
-          
+          raise SidecarNotAvailable, "service '#{name}:#{type}' not available" if retries == 0
+
           puts "retrying to get instances for service '#{name}:#{type}' (tries left: #{retries})"
           sleep 1
         else
@@ -47,4 +51,20 @@ module RSpec::Sidecar::Services
       end
     end
   end
+
+  def service_is_unregistered(name, type, zookeeper_host: "localhost", zookeeper_port: 2181, retries: 30)
+    loop do
+      begin
+        return false if retries == 0
+
+        service = service(name, type, zookeeper_host: zookeeper_host, zookeeper_port: zookeeper_port, retries: 1)
+        retries -= 1
+        sleep 1
+        puts "waiting for service '#{name}:#{type}' to unregister (tries left: #{retries})"
+      rescue SidecarNotAvailable => _
+        return true
+      end
+    end
+  end
+
 end

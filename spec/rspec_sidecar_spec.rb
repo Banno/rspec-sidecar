@@ -37,11 +37,11 @@ describe RSpec::Sidecar do
   it "spins until service instances are available" do
     # multiple calls
     expect(zookeeper).to receive(:children).with("/banno/services/test:http").and_return([], ["child1"])
-    
+
     expect(zookeeper).to receive(:get).with("/banno/services/test:http/child1") do
       [instance_info.to_json, nil]
     end
-    
+
     expect(service_port("test", "http")).to eql(instance_info[:port])
   end
 
@@ -70,7 +70,22 @@ describe RSpec::Sidecar do
     expect(result).to be false
   end
 
-  let(:zookeeper) do 
+  it "the service_is_unregistered method returns false for registered service" do
+    setup_zookeeper_mock("test", "http", instance_info)
+    result = service_is_unregistered("test", "http", retries: 1)
+    expect(result).to be false
+  end
+
+  it "the service_is_unregistered method returns true for no registerd service at path" do
+    expect(zookeeper).to receive(:children).with("/banno/services/test-not-registered:http") do
+      []
+    end
+
+    result = service_is_unregistered("test-not-registered", "http")
+    expect(result).to be true
+  end
+
+  let(:zookeeper) do
     zookeeper = double("zookeeper")
     expect(ZK).to receive(:open).and_yield(zookeeper)
     zookeeper
