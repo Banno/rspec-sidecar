@@ -78,6 +78,15 @@ describe RSpec::Sidecar do
 
   it "the service_is_unregistered method returns true for no registerd service at path" do
     expect(zookeeper).to receive(:children).with("/banno/services/test-not-registered:http") do
+      raise ZK::Exceptions::NoNode
+    end
+
+    result = service_is_unregistered("test-not-registered", "http")
+    expect(result).to be true
+  end
+
+  it "the service_is_unregistered method returns true for unregisterd service at path" do
+    expect(zookeeper).to receive(:children).with("/banno/services/test-not-registered:http") do
       []
     end
 
