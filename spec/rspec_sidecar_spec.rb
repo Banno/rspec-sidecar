@@ -8,7 +8,7 @@ describe RSpec::Sidecar do
   end
 
   it "the  wait_until helper will fail if it's always falsy" do
-    expect { wait_until(timeout: 2) { false } }.to raise_error
+    expect { wait_until(timeout: 2) { false } }.to raise_error(Timeout::Error)
   end
 
   let(:instance_info) { {:address => "host1", :port => "9999"}  }
